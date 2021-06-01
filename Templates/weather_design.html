@@ -1,0 +1,605 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-wEmeIV1mKuiNpC+IOBjI7aAzPcEZeedi5yW5f2yOq55WWLwNGmvvx4Um1vskeMj0" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+    <title>Weather API</title>
+</head>
+<style>
+    body {
+        background-image: url('https://demo.w3layouts.com/demos_new/template_demo/27-06-2017/cool_weather_widget-demo_Free/2131669178/web/video/snow.png');
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-size: cover;
+    }
+
+    .body_for_overlay {
+        background: rgba(36, 36, 36, 0.5);
+        background-position: center center;
+        background-repeat: no-repeat;
+        background-attachment: fixed;
+        width: 60%;
+        height: 920px;
+    }
+
+    @media (max-width: 1400px) {
+        .body_for_overlay {
+            width: 70%;
+        }
+    }
+
+    @media (max-width: 1200px) {
+        .body_for_overlay {
+            width: 80%;
+        }
+    }
+
+    @media (max-width: 772px) {
+        .body_for_overlay {
+            width: 90%;
+        }
+    }
+
+    @media (max-width: 650px) {
+        .body_for_overlay {
+            width: 100%;
+        }
+    }
+    @media (max-width: 992px){
+        .hourly_temp_show{
+            display: none;
+        }
+    }
+</style>
+
+<body class="text-center">
+    {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <div class="body_for_overlay container">
+        <h1 class="pt-3" style="color: white;"><u>COOL WEATHER WIDGET</u></h1>
+        <button type="button" class="btn btn-primary mt-5" data-bs-toggle="modal" data-bs-target="#city_name_form">Find
+            My City Weather</button>
+        <div class="output-section mt-3 pt-2">
+            <div id="carouselExampleCaptions" class="carousel slide" data-bs-ride="carousel"">
+            <div class=" carousel-indicators">
+                <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="0" class="active"
+                    aria-current="true" aria-label="Slide 1"></button>
+                {% if city_name_2 %}
+                <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="1"
+                    aria-label="Slide 2"></button>
+                {% endif %}
+                {% if city_name_3 %}
+                <button type="button" data-bs-target="#carouselExampleCaptions" data-bs-slide-to="2"
+                    aria-label="Slide 3"></button>
+                {% endif %}
+            </div>
+            <div class="carousel-inner">
+                <div class="carousel-item active">
+                    <img src="https://media2.giphy.com/media/5rmopwZfvuWbHJTEFu/giphy.webp?cid=ecf05e47zlw4mjvgaow8jmt91xfqdtl0tp5lxkdjnltxrzp3&rid=giphy.webp&ct=g"
+                        class="d-block" alt="..." style="height: 730px; width: 100%; border-radius: 10%;">
+                    <div class="carousel-caption d-block">
+                        {% if city_name_1 %}
+                        <h2 style="color: white;">{{city_name_1}}</h2>
+                        <h3 style="color: white;">{{city_1_weather_desc}}</h3>
+                        <img src="/static/weather_icon/{{city_1_weather_icon}}.png" alt="" height="100" width="100">
+                        <h3 style="color: white;">{{city_1_temp}} °C</h3>
+                        <div class="row mt-5 hourly_temp_show">
+                            <div class="col-3">
+                                <h6>Temp 12 AM</h6>
+                                <b>{{city_1_time_00_AM}}°C</b>
+                            </div>
+                            <div class="col-3">
+                                <h6>Temp 6 AM</h6>
+                                <b>{{city_1_time_06_AM}}°C</b>
+                            </div>
+                            <div class="col-3">
+                                <h6>Temp 12 NOON</h6>
+                                <b>{{city_1_time_12_NOON}}°C</b>
+                            </div>
+                            <div class="col-3">
+                                <h6>Temp 6 PM</h6>
+                                <b>{{city_1_time_06_PM}}°C</b>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Tomorrow</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_1_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_1_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_1_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 3</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_1_day_2_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_1_day_2_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_1_day_2_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 4</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_1_day_3_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_1_day_3_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_1_day_3_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 5</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_1_day_4_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_1_day_4_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_1_day_4_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 6</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_1_day_5_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_1_day_5_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_1_day_5_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 7</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_1_day_6_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_1_day_6_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_1_day_6_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <h2 style="color: white;">CITY NAME</h2>
+                        <h3 style="color: white;">WEATHER DESCRIPTION</h3>
+                        <img src="https://media.gettyimages.com/photos/weather-picture-id184919103?s=612x612" alt=""
+                            height="100" width="100" style="margin-top: 20px; margin-bottom: 20px;">
+                        <h3 style="color: white;">TEMPERATURE</h3>
+                        <div class="row mt-5">
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Tomorrow</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 3</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 4</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 5</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 6</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 7</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if city_name_2 %}
+                <div class="carousel-item">
+                    <img src="https://media2.giphy.com/media/Pvex9XDcVJpAKT1hSe/200.webp?cid=ecf05e47b3kwnnsq04t0q75niedrst5x9w6p18qfpe4jhiev&rid=200.webp&ct=g"
+                        class="d-block" alt="..." style="height: 730px; width: 100%; border-radius: 10%;">
+                    <div class="carousel-caption d-block">
+                        {% if city_name_2 %}
+                        <h2 style="color: white;">{{city_name_2}}</h2>
+                        <h3 style="color: white;">{{city_2_weather_desc}}</h3>
+                        <img src="/static/weather_icon/{{city_2_weather_icon}}.png" alt="" height="100" width="100">
+                        <h3 style="color: white;">{{city_2_temp}} °C</h3>
+                        <div class="row mt-5 hourly_temp_show">
+                            <div class="col-3">
+                                <h6>Temp 12 AM</h6>
+                                <b>{{city_2_time_00_AM}}°C</b>
+                            </div>
+                            <div class="col-3">
+                                <h6>Temp 6 AM</h6>
+                                <b>{{city_2_time_06_AM}}°C</b>
+                            </div>
+                            <div class="col-3">
+                                <h6>Temp 12 NOON</h6>
+                                <b>{{city_2_time_12_NOON}}°C</b>
+                            </div>
+                            <div class="col-3">
+                                <h6>Temp 6 PM</h6>
+                                <b>{{city_2_time_06_PM}}°C</b>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Tomorrow</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_2_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_2_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_2_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 3</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_2_day_2_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_2_day_2_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_2_day_2_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 4</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_2_day_3_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_2_day_3_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_2_day_3_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 5</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_2_day_4_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_2_day_4_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_2_day_4_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 6</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_2_day_5_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_2_day_5_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_2_day_5_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 7</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_2_day_6_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_2_day_6_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_2_day_6_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <h2 style="color: white;">CITY NAME</h2>
+                        <h3 style="color: white;">WEATHER DESCRIPTION</h3>
+                        <img src="https://media.gettyimages.com/photos/weather-picture-id184919103?s=612x612" alt=""
+                            height="100" width="100" style="margin-top: 20px; margin-bottom: 20px;">
+                        <h3 style="color: white;">TEMPERATURE</h3>
+                        <div class="row mt-5">
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Tomorrow</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 3</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 4</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 5</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 6</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 7</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if city_name_3 %}
+                <div class="carousel-item">
+                    <img src="https://media4.giphy.com/media/HkxEzx0xYc1vgBTDvJ/giphy.webp?cid=ecf05e47kkmzikbpbgq2qmv9tktf9fnp0z9zh4ebw0v0ga46&rid=giphy.webp&ct=g"
+                        class="d-block" alt="..." style="height: 730px; width: 100%; border-radius: 10%;">
+                    <div class="carousel-caption d-block">
+                        {% if city_name_3 %}
+                        <h2 style="color: white;">{{city_name_3}}</h2>
+                        <h3 style="color: white;">{{city_3_weather_desc}}</h3>
+                        <img src="/static/weather_icon/{{city_3_weather_icon}}.png" alt="" height="100" width="100">
+                        <h3 style="color: white;">{{city_3_temp}} °C</h3>
+                        <div class="row mt-5 hourly_temp_show">
+                            <div class="col-3">
+                                <h6>Temp 12 AM</h6>
+                                <b>{{city_3_time_00_AM}}°C</b>
+                            </div>
+                            <div class="col-3">
+                                <h6>Temp 6 AM</h6>
+                                <b>{{city_3_time_06_AM}}°C</b>
+                            </div>
+                            <div class="col-3">
+                                <h6>Temp 12 NOON</h6>
+                                <b>{{city_3_time_12_NOON}}°C</b>
+                            </div>
+                            <div class="col-3">
+                                <h6>Temp 6 PM</h6>
+                                <b>{{city_3_time_06_PM}}°C</b>
+                            </div>
+                        </div>
+                        <div class="row mt-5">
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Tomorrow</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_3_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_3_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_3_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 3</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_3_day_2_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_3_day_2_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_3_day_2_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 4</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_3_day_3_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_3_day_3_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_3_day_3_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 5</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_3_day_4_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_3_day_4_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_3_day_4_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 6</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_3_day_5_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_3_day_5_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_3_day_5_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 7</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="/static/weather_icon/{{city_3_day_6_weather_icon}}.png" alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>{{city_3_day_6_temp_min}}°C</b></div>
+                                    <div class="col-6" style="float: right;"><b>{{city_3_day_6_temp_max}}°C</b></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% else %}
+                        <h2 style="color: white;">CITY NAME</h2>
+                        <h3 style="color: white;">WEATHER DESCRIPTION</h3>
+                        <img src="https://media.gettyimages.com/photos/weather-picture-id184919103?s=612x612" alt=""
+                            height="100" width="100" style="margin-top: 20px; margin-bottom: 20px;">
+                        <h3 style="color: white;">TEMPERATURE</h3>
+                        <div class="row mt-5">
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Tomorrow</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 3</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 4</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 5</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 6</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-4 col-xl-2">
+                                <h6>Day 7</h6>
+                                <img style="width: 50%; height: 50%; border-radius: 100%;"
+                                    src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6q4eUtTgmkdpWy-zj1Z-LX5QPd5EIDyi1JQ&usqp=CAU"
+                                    alt="">
+                                <div class="row">
+                                    <div class="col-6" style="float: left;"><b>min</b></div>
+                                    <div class="col-6" style="float: right;"><b>max</b></div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            {% if city_name_2 or city_name_3 %}
+            <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleCaptions"
+                data-bs-slide="prev">
+                <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Previous</span>
+            </button>
+            <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleCaptions"
+                data-bs-slide="next">
+                <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                <span class="visually-hidden">Next</span>
+            </button>
+            {% endif %}
+        </div>
+    </div>
+</body>
+
+<div class="modal fade" id="city_name_form" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="city_name_formLabel">Find Location</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form action="/update_api" method="post">
+                <div class="modal-body" style="text-align: left;">
+                    <span style="font-size: 25px;">Location 1:- </span>
+                    <span><input type="text" name="city_name_1" placeholder="Search for a location"
+                            style="font-size: 20px; width: 100%; padding-left: 10px; padding-right: 10px;"></span><br>
+                    <span style="font-size: 25px;">Location 2:- </span>
+                    <span><input type="text" name="city_name_2" placeholder="Search for a location"
+                            style="font-size: 20px; width: 100%; padding-left: 10px; padding-right: 10px;"></span><br>
+                    <span style="font-size: 25px;">Location 3:- </span>
+                    <span><input type="text" name="city_name_3" placeholder="Search for a location"
+                            style="font-size: 20px; width: 100%; padding-left: 10px; padding-right: 10px;"></span><br>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-p34f1UUtsS3wqzfto5wAAmdvj+osOnFyQFpp4Ua3gs/ZVWx6oOypYoCJhGGScy+8"
+    crossorigin="anonymous"></script>
+
+
+</html>
